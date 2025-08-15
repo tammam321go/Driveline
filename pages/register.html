@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registration</title>
+  <link rel="stylesheet" href="../styles/styles/register.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@900&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<header>
+  <div class="navbar">
+    <div class="brand-container">
+      <img src="https://i.postimg.cc/63bx44WN/car-logo.jpg" alt="Logo" />
+      <div class="logo-text">carverly</div>
+    </div>
+    <div class="nav-icons">
+      <div><i class="fa-solid fa-heart"></i><span>Buying</span></div>
+      <div><i class="fa-solid fa-sterling-sign"></i><span>Selling</span></div>
+      <div><i class="fa-solid fa-user"></i><span>Log In</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="register-container">
+    <h2>CREATE YOUR ACCOUNT</h2>
+    <form class="register-form" id="registerForm" method="POST" action="javascript:void(0);">
+
+      <label for="fname">First Name</label>
+      <input type="text" id="fname" placeholder="First Name" required />
+
+      <label for="lname">Last Name</label>
+      <input type="text" id="lname" placeholder="Last Name" required />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Email Address" required />
+
+      <label for="profilePic">Profile Picture URL</label>
+      <input type="url" id="profilePic" placeholder="Image URL" />
+
+      <label for="about">About You</label>
+      <textarea id="about" rows="3" placeholder="Something about you in 300 character..."></textarea>
+
+      <label for="userType">User Type</label>
+      <select id="userType" onchange="toggleCarField()" required>
+        <option value="">Select Type</option>
+        <option value="enthusiast">Car Enthusiast</option>
+        <option value="owner">Car Owner</option>
+        <option value="buyer">Potential Buyer</option>
+      </select>
+
+      <div id="ownedCarField" style="display: none;">
+        <label for="ownedCar">Owned Car</label>
+        <input type="text" id="ownedCar" placeholder="Your car model" />
+      </div>
+
+      <label for="password">Password</label>
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Password" required />
+        <i class="fa-solid fa-eye eye-icon" onclick="toggleVisibility('password', this)"></i>
+      </div>
+      
+      <label for="confirmPassword">Confirm Password</label>
+      <div class="password-wrapper">
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+        <i class="fa-solid fa-eye eye-icon" onclick="toggleVisibility('confirmPassword', this)"></i>
+      </div>
+      
+      
+
+      <button type="submit">Register</button>
+    </form>
+  </div>
+</main>
+
+<div class="extra-links">
+    <p>Already have an account? <a href="/driveline/pages/login.html">Log In</a></p>
+</div>
+
+<footer class="custom-footer">
+  <!-- (footer same as login.html) -->
+  <div class="footer-content">
+    <div class="footer-column">
+      <h3>Help Centre</h3>
+      <p>Monday to Friday 9.00 - 18.00</p>
+      <p>Saturday 9.00 - 17.30</p>
+      <p>Sundays and Bank Holidays CLOSED</p>
+      <div class="social-icons">
+        <i class="fab fa-facebook-f"></i>
+        <i class="fab fa-x-twitter"></i>
+        <i class="fab fa-instagram"></i>
+        <i class="fab fa-youtube"></i>
+        <i class="fab fa-tiktok"></i>
+      </div>
+    </div>
+    <div class="footer-column">
+      <a href="#">About us</a>
+      <a href="#">Contact us</a>
+      <a href="#">Authors and experts</a>
+      <a href="#">Carverly newsroom</a>
+    </div>
+    <div class="footer-column">
+      <a href="#">Careers</a>
+      <a href="#">Dealer & brand partners</a>
+    </div>
+    <div class="footer-column trustpilot">
+      <p>Rated <strong>4.4</strong>/5 from <strong>3,590</strong> reviews</p>
+      <p style="font-size: 22px; color: #00B67A; font-weight: bold;">★ Trustcarverly</p>
+      <p>⭐⭐⭐⭐⭐</p>
+    </div>
+  </div>
+  <hr>
+  <div class="footer-bottom">
+    <p>© 2025 Carverly Ltd. All rights reserved</p>
+    <div class="footer-links">
+      <a href="#">Terms & conditions</a>
+      <a href="#">Manage cookies & privacy</a>
+      <a href="#">Fraud disclaimer</a>
+      <a href="#">ESG Policy</a>
+      <a href="#">Privacy policy</a>
+      <a href="#">Modern slavery statement</a>
+      <a href="#">Accessibility notice</a>
+      <a href="#">Sitemap</a>
+    </div>
+    <div class="footer-flags">
+      <span><i class="fa-solid fa-flag"></i> BD </span>
+      <span><i class="fa-solid fa-flag"></i> Germany </span>
+      <span><i class="fa-solid fa-flag"></i> Spain </span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function toggleCarField() {
+    const userType = document.getElementById('userType').value;
+    const ownedCar = document.getElementById('ownedCarField');
+    ownedCar.style.display = (userType === 'owner') ? 'block' : 'none';
+  }
+</script>
+<script>
+    function toggleCarField() {
+      const userType = document.getElementById('userType').value;
+      document.getElementById('ownedCarField').style.display = userType === 'owner' ? 'block' : 'none';
+    }
+  
+    function toggleVisibility(inputId, icon) {
+  const input = document.getElementById(inputId);
+  const isPassword = input.type === "password";
+  input.type = isPassword ? "text" : "password";
+  icon.classList.toggle("fa-eye");
+  icon.classList.toggle("fa-eye-slash");
+}
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelector(".register-form").addEventListener("submit", async function (e) {
+        e.preventDefault(); 
+    
+        const fname = document.getElementById("fname").value.trim();
+        const lname = document.getElementById("lname").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const profilePic = document.getElementById("profilePic").value.trim();
+        const about = document.getElementById("about").value.trim();
+        const userType = document.getElementById("userType").value;
+        const ownedCar = document.getElementById("ownedCar").value.trim();
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+    
+        // Validation
+        const nameRegex = /^[A-Za-z]{2,}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const urlRegex = /\.(jpeg|jpg|gif|png|bmp|webp)$/i;
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    
+        if (!nameRegex.test(fname)) return alert("Enter a valid first name (min 2 letters).");
+        if (!nameRegex.test(lname)) return alert("Enter a valid last name (min 2 letters).");
+        if (!emailRegex.test(email)) return alert("Enter a valid email.");
+        if (profilePic && !urlRegex.test(profilePic)) return alert("Enter a valid image URL.");
+        if (about.length > 300) return alert("About section too long (max 300 chars).");
+        if (!userType) return alert("Select a user type.");
+        if (userType === "owner" && !ownedCar) return alert("Enter your car model.");
+        if (!passwordRegex.test(password)) return alert("Weak password: needs letter, number & symbol.");
+        if (password !== confirmPassword) return alert("Passwords do not match.");
+    
+        const fullName = `${fname} ${lname}`;
+    
+        const userData = {
+          fullName: fullName,
+          email: email,
+          profilePic: profilePic,
+          about: about,
+          userType: userType,
+          ownedCar: userType === "owner" ? ownedCar : "",
+          password: password
+        };
+    
+        try {
+          const res = await fetch('/driveline/controllers/register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+          });
+    
+          if (res.ok) {
+            alert("Registration successful!");
+            window.location.href = window.location.origin + "/driveline/pages/login.html";
+
+          } else {
+            const errorData = await res.json();
+            alert(`Registration failed: ${errorData.message || 'Unknown error'}`);
+          }
+    
+        } catch (error) {
+          console.error("Error submitting form:", error);
+          alert("An error occurred. Please try again later.");
+        }
+      });
+    });
+    </script>
+    
+
+  
+</body>
+</html>

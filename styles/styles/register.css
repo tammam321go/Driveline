@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #ffffff;
+}
+
+header {
+  background-color: #002b5c;
+  color: white;
+  padding: 30px 20px;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-container {
+  display: flex;
+  align-items: center;
+}
+
+.brand-container img {
+  height: 50px;
+  padding-left: 40px;
+  border-radius: 90px;
+}
+
+.logo-text {
+  font-family: 'Rubik', sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+  text-transform: lowercase;
+  color: white;
+  padding: 10px;
+}
+
+.nav-icons {
+  display: flex;
+  gap: 33px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.nav-icons div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+}
+
+.nav-icons i {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.nav-icons div:hover {
+  color: rgb(225, 153, 59);
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+}
+
+.register-container {
+  text-align: center;
+}
+
+.register-form {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  width: 330px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  text-align: left;
+}
+
+.register-form h2 {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.register-form label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: 500;
+}
+
+.register-form input,
+.register-form select,
+.register-form textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.register-form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #4187e9;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.extra-links {
+  text-align: center;
+  margin-top: -40px;
+  font-size: 15px;
+  font-weight: 600;
+  color: black;
+}
+
+.extra-links a {
+  text-decoration: underline;
+  color: black;
+}
+
+.custom-footer {
+  background-color: #111;
+  color: white;
+  padding: 50px 30px 40px 50px;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  margin-top: 100px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.footer-column h3 {
+  font-size: 20px;
+  margin-bottom: 14px;
+}
+
+.footer-column a {
+  display: block;
+  color: white;
+  text-decoration: underline;
+  margin: 10px 0;
+}
+
+.footer-column p {
+  margin: 10px 0;
+}
+
+.social-icons {
+  font-size: 22px;
+  display: flex;
+  margin-top: 30px;
+  gap: 20px;
+}
+
+.trustpilot p {
+  color: white;
+}
+
+.footer-bottom {
+  margin-top: 50px;
+  text-align: center;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.footer-links a {
+  color: white;
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+.footer-flags span {
+  margin: 0 12px;
+  font-size: 16px;
+}
+.password-wrapper {
+    position: relative;
+  }
+  
+  .eye-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    color: #555;
+    font-size: 18px;
+  }
+  

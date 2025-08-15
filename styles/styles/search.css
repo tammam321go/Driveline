@@ -1,0 +1,112 @@
+/* Inherit homepage styling */
+@import url("home.css");
+
+/* Back Button */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #002b5c;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  margin-right: 10px;
+}
+.back-btn:hover {
+  background-color: #004080;
+}
+
+/* Search form */
+.search-form {
+  background: #f5f4f2;
+  padding: 20px;
+  margin: 0 40px 30px;
+  border-radius: 8px;
+}
+.search-form .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+}
+.field label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+.field input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.actions {
+  grid-column: span 2;
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+.btn.primary {
+  background: #00c3ff;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn.primary:hover {
+  background: #009ac7;
+}
+.btn.secondary {
+  background: #ccc;
+  color: black;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+}
+.results-table {
+  width: 90%;
+  margin: auto;
+  border-collapse: collapse;
+}
+.results-table th, .results-table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+.results-table tr:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+.car-name {
+  font-weight: bold;
+}
+.muted {
+  color: #777;
+  font-size: 12px;
+}
+
+.actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    font-size: 14px;
+    min-width: 100px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  
+  .actions .search-btn {
+    background-color: #002b5c;
+    color: white;
+  }
+  
+
+  .actions .clear-btn {
+    background-color: #ccc;
+    color: black;
+  }
+  
