@@ -1,4 +1,4 @@
-/* Reset & Base */
+
 * {
   margin: 0;
   padding: 0;
@@ -8,145 +8,172 @@
 body {
   font-family: 'Segoe UI', sans-serif;
   background-color: #f4f6f9;
+  line-height: 1.5;
+  color: #333;
 }
 
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f4f6f9;
-  margin: 0;
-}
 
-/* Header */
 header {
   background-color: #002b5c;
   color: white;
   padding: 12px 30px;
 }
 
-/* Navbar layout: Back left, Edit right */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* Buttons (Back / Edit) */
 .nav-button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 16px; /* bigger text */
+  font-size: 16px;
   font-weight: bold;
   color: white;
   cursor: pointer;
-  transition: color 0.3s ease;
-  gap: 5px; /* space between icon and text */
+  gap: 5px;
+  transition: color 0.3s ease, transform 0.2s ease;
 }
 
-/* Bigger icons */
 .nav-button i {
-  font-size: 28px; /* larger icon */
+  font-size: 28px;
 }
 
-/* Hover effect */
-.nav-button:hover i,
-.nav-button:hover span {
+.nav-button:hover {
   color: rgb(225, 153, 59);
+  transform: translateY(-2px);
 }
 
 
+main {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
 
-/* Profile Panel */
 .profile-panel {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  width: 100%;
+  max-width: 1200px;
 }
 
-.profile-top-section {
+
+.profile-card {
+  flex: 1 1 400px;
+  background: white;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 40px;
-  margin-bottom: 30px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.profile-bottom-section {
-  display: flex;
-  gap: 40px;
+.profile-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
 }
 
-.profile-about, .profile-car {
-  flex: 1;
-}
 
-.profile-picture-container {
-  flex-shrink: 0;
-}
-
-.profile-picture {
-  width: 200px;
-  height: 200px;
+#profile-card img {
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid #4187e9;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.mini-info {
-  flex: 1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
 }
 
 .mini-info h3 {
-  margin: 0 0 10px 0;
-  font-size: 24px;
+  font-size: 26px;
+  margin-bottom: 8px;
+  color: #002b5c;
 }
 
 .mini-info p {
-  margin: 8px 0;
-  font-size: 16px;
-}
-
-.mini-section {
-  margin-top: 20px;
-}
-
-.mini-section strong {
-  display: block;
-  font-size: 16px;
-  color: #111;
-  margin-bottom: 6px;
-}
-
-.mini-section p {
   font-size: 15px;
   color: #555;
-  line-height: 1.6;
+}
+
+
+#activities-card h3 {
+  font-size: 22px;
+  color: #002b5c;
+  margin-bottom: 15px;
+}
+
+#activities-card p {
+  font-size: 15px;
+  color: #444;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .profile-panel {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #profile-card img {
+    width: 200px;
+    height: 200px;
+  }
+}
+
+.mini-info {
+  text-align: center;
+}
+
+.mini-info h3 {
+  font-size: 26px;
+  margin-bottom: 8px;
+  color: #002b5c;
+}
+
+.mini-info p {
+  font-size: 15px;
+  color: #555;
+}
+
+
+.profile-details {
+  flex: 2 1 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.profile-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.profile-section h2 {
+  color: #002b5c;
+  margin-bottom: 12px;
+  font-size: 20px;
+}
+
+.profile-section p {
+  color: #444;
+  font-size: 15px;
   white-space: pre-line;
 }
 
-/* Back Button */
-.back-button {
-  margin-top: 30px;
-  width: 100%;
-  background-color: #0056b3;
-  color: white;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.3s ease;
-}
 
-.back-button:hover {
-  background-color: #003f84;
-}
-
-/* Footer */
 .custom-footer {
-  background-color: #111111;
+  background-color: #111;
   color: white;
-  padding: 50px 30px 40px 50px;
+  padding: 50px 30px;
   font-size: 15px;
   margin-top: 80px;
 }
@@ -208,4 +235,17 @@ header {
 .footer-flags span {
   margin: 0 12px;
   font-size: 16px;
+}
+
+
+@media (max-width: 768px) {
+  .profile-panel {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .profile-card img {
+    width: 200px;
+    height: 200px;
+  }
 }

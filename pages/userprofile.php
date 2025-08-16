@@ -2,20 +2,15 @@
 session_start();
 require_once("../repositories/db_connect.php");
 
-// Redirect to login if user is not logged in
-if (!isset($_SESSION['user']['id'])) {
-    header("Location: ../pages/login.html");
-    exit;
-}
-
 // Get the logged-in user's ID
 $user_id = $_SESSION['user']['id'];
 
-// Fetch user data from database
-$query = "SELECT u_name, u_email, u_type,u_points ,u_profile_pic, u_about, u_owned_car FROM users WHERE u_id = ?";
+$query = "CALL get_user_profile_by_session(?)";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->closeCursor(); 
+
 
 // Optional: If user not found (e.g., deleted), redirect or show error
 if (!$user) {
@@ -55,43 +50,26 @@ if (!$user) {
     </div>
   </header>
 
-
-<main> 
+  <main> 
   <div class="profile-panel">
-    <div class="profile-header">
-    <div style="display: flex; align-items: center; gap: 20px;">
-  <!-- Profile Picture -->
-  <img src="<?= htmlspecialchars($user['u_profile_pic']) ?>" 
-       alt="Profile Picture" 
-       style="width: 350px; height: 350px; border-radius: 50%; object-fit: cover; border: 4px solid #4187e9;" />
-
-  <!-- Mini Info -->
-  <div class="mini-info">
-    <h3><?= htmlspecialchars($user['u_name']) ?></h3>
-    <p><?= htmlspecialchars($user['u_type']) ?></p>
-    <p><?= htmlspecialchars($user['u_email']) ?></p>
-  <p><strong>Points:</strong> <?= htmlspecialchars($user['u_points']) ?></p>
-  </div>
-</div>
-
-  
-
-</div>
-
-
-    <div class="profile-about">
-      <h2>About</h2>
-      <p><?= nl2br(htmlspecialchars($user['u_about'])) ?></p>
+    <!-- Left Card: Profile Info -->
+    <div class="profile-card" id="profile-card">
+      <img src="<?= htmlspecialchars($user['u_profile_pic']) ?>" alt="Profile Picture">
+      <div class="mini-info">
+        <h3><?= htmlspecialchars($user['u_name']) ?></h3>
+        <p><?= htmlspecialchars($user['u_type']) ?></p>
+        <p><?= htmlspecialchars($user['u_email']) ?></p>
+        <p><strong>Points:</strong> <?= htmlspecialchars($user['u_points']) ?></p>
+        <p><strong>About</strong></p>
+        <p><?= nl2br(htmlspecialchars($user['u_about'])) ?></p>
+      </div>
     </div>
 
-    <?php if (!empty($user['u_owned_car'])): ?>
-    <div class="profile-car">
-      <h2>Owned Car</h2>
-      <p><?= htmlspecialchars($user['u_owned_car']) ?></p>
+    <!-- Right Card: Recent Activities -->
+    <div class="profile-card" id="activities-card">
+      <h3>Recent Activities</h3>
+      <p>No activities yet.</p>
     </div>
-    <?php endif; ?>
-
-    
   </div>
 </main>
 

@@ -1,18 +1,23 @@
 <?php
-session_start();
-require_once("../repositories/db_connect.php");
+include("../controllers/page_controller.php");
 
-// Redirect if not logged in
-if (!isset($_SESSION['user']['id'])) {
-    header("Location: ../pages/login.html");
-    exit;
-}
+require_once("../repositories/db_connect.php");
 
 if (!isset($_GET['c_id']) || !is_numeric($_GET['c_id'])) {
     die("Invalid Car ID");
 }
 
 $carId = (int) $_GET['c_id'];
+
+// Get average review for the car
+$stmtAvgUser = $pdo->prepare("CALL GetCarAverageReview(:car_id)");
+$stmtAvgUser->bindParam(':car_id', $posterCarId, PDO::PARAM_INT);
+$stmtAvgUser->execute();
+$avgDataUser = $stmtAvgUser->fetch(PDO::FETCH_ASSOC);
+$stmtAvgUser->closeCursor();
+
+$avgRatingUser = $avgDataUser['avg_rating'] ?? 0;
+$totalReviewsUser = $avgDataUser['total_reviews'] ?? 0;
 
 //GiveReview
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -211,7 +216,11 @@ try {
 
     <!-- Right: Reviews -->
     <div class="review-list">
-        <h2>User Reviews</h2>
+    <h2>User Reviews</h2>
+    <p class="review-summary">
+        ⭐ <?php echo $avgRatingUser; ?> / 5 
+        (<?php echo $totalReviewsUser; ?> reviews)
+    </p>
         <div class="review-scroll">
 
             <?php

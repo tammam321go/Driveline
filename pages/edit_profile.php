@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Profile Information</title>
-  <link rel="stylesheet" href="../styles/styles/edit_profile.css" />
+  <link rel="stylesheet" href="../styles/styles/profile.css" />
   <!-- Font Awesome CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <!-- Add this inside <head> -->
@@ -156,6 +156,16 @@
 
   </div>
 </footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const card = document.getElementById("profileCard");
+  setTimeout(() => {
+    card.classList.add("show");
+  }, 200);
+});
+</script>
+
 </body>
 </html>
 

@@ -32,9 +32,13 @@
   <i class="fa-solid fa-magnifying-glass"></i>
   <span>Search Cars</span>
 </div>
-        <div><i class="fa-solid fa-tag"></i><span>best deals</span></div>
         
-        <div><i class="fa-solid fa-users"></i><span>community</span></div>
+        <div id="CommunityBtn" style="cursor: pointer;">
+          <i class="fa-solid fa-users"></i>
+          <span>community</span>
+          </div>
+
+          <div><i class="fa-solid fa-tag"></i><span>best deals</span></div>
         
 <div id="logoutBtn" style="cursor: pointer;">
   <i class="fa-solid fa-unlock"></i>
@@ -51,6 +55,16 @@
 
 <?php 
 require_once("../repositories/db_connect.php"); 
+
+//Get Average Review for Thumbnail Car
+$stmtAvg = $pdo->prepare("CALL GetCarAverageReview(:car_id)");
+$stmtAvg->bindParam(':car_id', $posterCarId, PDO::PARAM_INT);
+$stmtAvg->execute();
+$avgData = $stmtAvg->fetch(PDO::FETCH_ASSOC);
+$stmtAvg->closeCursor();
+
+$avgRating = $avgData['avg_rating'] ?? 0;
+$totalReviews = $avgData['total_reviews'] ?? 0;
 
 try {
     // Get the Thumbnail Car
@@ -69,6 +83,17 @@ try {
 
     $stmt->closeCursor();
 
+
+    // Get average review for thumbnail car
+    $stmtAvg = $pdo->prepare("CALL GetCarAverageReview(:car_id)");
+    $stmtAvg->bindParam(':car_id', $posterCarId, PDO::PARAM_INT);
+    $stmtAvg->execute();
+    $avgData = $stmtAvg->fetch(PDO::FETCH_ASSOC);
+    $stmtAvg->closeCursor();
+
+    $avgRating = $avgData['avg_rating'] ?? 0;
+    $totalReviews = $avgData['total_reviews'] ?? 0;
+
     // Get Four Other Cars
     $stmt2 = $pdo->prepare("CALL Get_Four_Other_Cars(:excluded_id)");
     $stmt2->bindParam(':excluded_id', $posterCarId, PDO::PARAM_INT);
@@ -76,6 +101,19 @@ try {
     $otherCars = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
     $stmt2->closeCursor(); 
+
+    //Get average reviews for each other car
+    foreach ($otherCars as &$car) {
+      $stmtAvgOther = $pdo->prepare("CALL GetCarAverageReview(:car_id)");
+      $stmtAvgOther->bindParam(':car_id', $car['c_id'], PDO::PARAM_INT);
+      $stmtAvgOther->execute();
+      $avgDataOther = $stmtAvgOther->fetch(PDO::FETCH_ASSOC);
+      $stmtAvgOther->closeCursor();
+
+      $car['avg_rating'] = $avgDataOther['avg_rating'] ?? 0;
+      $car['total_reviews'] = $avgDataOther['total_reviews'] ?? 0;
+  }
+  unset($car); 
 
 } catch (PDOException $e) {
     die("Database error: " . $e->getMessage());
@@ -87,7 +125,13 @@ try {
     <a href="car.php?c_id=<?php echo urlencode($posterCarId); ?>" style="text-decoration: none; color: inherit;">
         <div class="car-banner" style="background-image: url('<?php echo htmlspecialchars($imgUrl); ?>'); cursor: pointer;">
             <div class="banner-text">
-                <h2><?php echo htmlspecialchars($carName); ?><br><span>Imagine the possibilities</span></h2>
+                <h2>
+                    <?php echo htmlspecialchars($carName); ?><br>
+                    <span>
+                        ⭐ <?php echo $avgRating; ?> / 5 
+                        (<?php echo $totalReviews; ?> reviews)
+                    </span>
+                </h2>
             </div>
         </div>
     </a>
@@ -97,22 +141,23 @@ try {
 
 <!-- 4 Other Cars Section -->
 <section class="deals-section"> 
-  <h2><i class="fa-solid fa-fire-flame-curved"></i> Big deals on wheels</h2>
-  <p class="subtitle">Say hello to the hottest deals on the market</p>
-
   <div class="card-container">
     <?php foreach ($otherCars as $car): ?>
       <a href="car.php?c_id=<?php echo urlencode($car['c_id']); ?>" style="text-decoration: none; color: inherit;">
         <div class="deal-card" style="cursor: pointer;">
           <img src="<?php echo htmlspecialchars($car['img_url']); ?>" alt="<?php echo htmlspecialchars($car['c_name']); ?>">
           <h3><?php echo htmlspecialchars($car['c_name']); ?></h3>
-          <p class="tagline">Exclusive look & feel</p>
+          <p class="tagline">
+            ⭐ <?php echo $car['avg_rating']; ?> / 5 
+            (<?php echo $car['total_reviews']; ?> reviews)
+          </p>
           <div class="arrow"><i class="fa-solid fa-circle-chevron-right"></i></div>
         </div>
       </a>
     <?php endforeach; ?>
   </div>
 </section>
+
 
 
 
@@ -260,6 +305,9 @@ document.getElementById("ProfileBtn").addEventListener("click", function () {
 });
 document.getElementById("SearchBtn").addEventListener("click", function () {
   window.location.href = "../pages/search.php";
+});
+document.getElementById("CommunityBtn").addEventListener("click", function () {
+  window.location.href = "../pages/community.php";
 });
 
 

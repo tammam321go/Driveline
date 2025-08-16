@@ -278,6 +278,7 @@ header {
 .review-list {
     flex: 1;
 }
+
 .review-list h2 {
     margin-bottom: 15px;
     color: #002b5c;

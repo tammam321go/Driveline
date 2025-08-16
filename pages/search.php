@@ -1,8 +1,5 @@
 <?php
-// optional page controller
-if (file_exists(__DIR__ . '/../controllers/page_controller.php')) {
-    include __DIR__ . '/../controllers/page_controller.php';
-}
+include("../controllers/page_controller.php");
 
 // DB connect
 require_once __DIR__ . '/../repositories/db_connect.php';
@@ -20,6 +17,22 @@ $year_end   = ($year_end   === '') ? null : (int)$year_end;
 
 $rows  = [];
 $error = null;
+
+//average reviews
+foreach ($rows as &$car) {
+  $carId = $car['c_id'] ?? 0;
+
+  $stmtAvg = $pdo->prepare("CALL GetCarAverageReview(:car_id)");
+  $stmtAvg->bindParam(':car_id', $carId, PDO::PARAM_INT);
+  $stmtAvg->execute();
+  $avgData = $stmtAvg->fetch(PDO::FETCH_ASSOC);
+  $stmtAvg->closeCursor();
+
+  // Attach review info with defaults
+  $car['avg_rating']    = $avgData['avg_rating'] ?? 0;
+  $car['total_reviews'] = $avgData['total_reviews'] ?? 0;
+}
+unset($car); // break reference
 
 // DB search
 if (isset($conn) && $conn instanceof mysqli) {
@@ -91,7 +104,7 @@ if (isset($conn) && $conn instanceof mysqli) {
 </header>
 
 <div class="breadcrumb">
-    <a href="home.php" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back</a>
+    <a href="homepage.php" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back</a>
     <span>Search</span>
 </div>
 
@@ -141,37 +154,43 @@ if (isset($conn) && $conn instanceof mysqli) {
 
     <!-- Results -->
     <section class="results">
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Model</th>
-            <th>Brand</th>
-            <th>Engine</th>
-            <th>Release Date</th>
-            <th>Country</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php if (!empty($rows)): ?>
-            <?php foreach ($rows as $r): ?>
-            <tr onclick="window.location='car.php?c_id=<?= urlencode($r['c_id'] ?? '') ?>'">
-              <td>
-                <div class="car-name"><?= htmlspecialchars($r['c_name'] ?? '') ?></div>
-                <div class="muted small"><?= htmlspecialchars(mb_strimwidth($r['c_description'] ?? '', 0, 120, '…')) ?></div>
-              </td>
-              <td><?= htmlspecialchars($r['c_model'] ?? '') ?></td>
-              <td><?= htmlspecialchars($r['c_brand'] ?? '') ?></td>
-              <td><?= htmlspecialchars($r['c_engine'] ?? '') ?></td>
-              <td><?= htmlspecialchars($r['c_release_date'] ?? '') ?></td>
-              <td><?= htmlspecialchars($r['c_country'] ?? '') ?></td>
-            </tr>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <tr><td colspan="6" class="muted">No results found.</td></tr>
-          <?php endif; ?>
-        </tbody>
-      </table>
+    <table class="results-table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Model</th>
+      <th>Brand</th>
+      <th>Engine</th>
+      <th>Release Date</th>
+      <th>Country</th>
+      <th>Reviews</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php if (!empty($rows)): ?>
+      <?php foreach ($rows as $r): ?>
+      <tr onclick="window.location='car.php?c_id=<?= urlencode($r['c_id'] ?? '') ?>'">
+        <td>
+          <div class="car-name"><?= htmlspecialchars($r['c_name'] ?? '') ?></div>
+          <div class="muted small"><?= htmlspecialchars(mb_strimwidth($r['c_description'] ?? '', 0, 120, '…')) ?></div>
+        </td>
+        <td><?= htmlspecialchars($r['c_model'] ?? '') ?></td>
+        <td><?= htmlspecialchars($r['c_brand'] ?? '') ?></td>
+        <td><?= htmlspecialchars($r['c_engine'] ?? '') ?></td>
+        <td><?= htmlspecialchars($r['c_release_date'] ?? '') ?></td>
+        <td><?= htmlspecialchars($r['c_country'] ?? '') ?></td>
+        <td>
+        ⭐ <?= htmlspecialchars($r['avg_rating'] ?? 0) ?> / 5 
+        (<?= htmlspecialchars($r['total_reviews'] ?? 0) ?>)
+        </td>
+      </tr>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <tr><td colspan="7" class="muted">No results found.</td></tr>
+    <?php endif; ?>
+  </tbody>
+</table>
+
     </section>
 </main>
 
