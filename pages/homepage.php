@@ -1,4 +1,84 @@
-<?php include("../controllers/page_controller.php"); ?>
+<?php include("../controllers/page_controller.php");
+require_once("../repositories/db_connect.php"); 
+
+// Is the logged in user an admin
+$currentUserId = $_SESSION['user']['id'] ?? null;
+$isAdmin = false;
+
+if ($currentUserId) {
+    $stmtAdmin = $pdo->prepare("CALL IsUserAdmin(:uid)");
+    $stmtAdmin->bindParam(':uid', $currentUserId, PDO::PARAM_INT);
+    $stmtAdmin->execute();
+    $result = $stmtAdmin->fetch(PDO::FETCH_ASSOC);
+    $stmtAdmin->closeCursor();
+
+    $isAdmin = $result && $result['is_admin'] == 1;
+}
+
+//Get Average Review for Thumbnail Car
+$stmtAvg = $pdo->prepare("CALL GetCarAverageReview(:car_id)");
+$stmtAvg->bindParam(':car_id', $posterCarId, PDO::PARAM_INT);
+$stmtAvg->execute();
+$avgData = $stmtAvg->fetch(PDO::FETCH_ASSOC);
+$stmtAvg->closeCursor();
+
+$avgRating = $avgData['avg_rating'] ?? 0;
+$totalReviews = $avgData['total_reviews'] ?? 0;
+
+try {
+    // Get the Thumbnail Car
+    $stmt = $pdo->prepare("CALL Get_Thumbnail()");
+    $stmt->execute();
+
+    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $carName = $row['c_name'];
+        $imgUrl = $row['img_url'];
+        $posterCarId = $row['c_id'];  
+    } else {
+        $carName = "Unknown Car";
+        $imgUrl = "default.jpg"; 
+        $posterCarId = 0;
+    }
+
+    $stmt->closeCursor();
+
+
+    // Get average review for thumbnail car
+    $stmtAvg = $pdo->prepare("CALL GetCarAverageReview(:car_id)");
+    $stmtAvg->bindParam(':car_id', $posterCarId, PDO::PARAM_INT);
+    $stmtAvg->execute();
+    $avgData = $stmtAvg->fetch(PDO::FETCH_ASSOC);
+    $stmtAvg->closeCursor();
+
+    $avgRating = $avgData['avg_rating'] ?? 0;
+    $totalReviews = $avgData['total_reviews'] ?? 0;
+
+    // Get Four Other Cars
+    $stmt2 = $pdo->prepare("CALL Get_Four_Other_Cars(:excluded_id)");
+    $stmt2->bindParam(':excluded_id', $posterCarId, PDO::PARAM_INT);
+    $stmt2->execute();
+    $otherCars = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt2->closeCursor(); 
+
+    //Get average reviews for each other car
+    foreach ($otherCars as &$car) {
+      $stmtAvgOther = $pdo->prepare("CALL GetCarAverageReview(:car_id)");
+      $stmtAvgOther->bindParam(':car_id', $car['c_id'], PDO::PARAM_INT);
+      $stmtAvgOther->execute();
+      $avgDataOther = $stmtAvgOther->fetch(PDO::FETCH_ASSOC);
+      $stmtAvgOther->closeCursor();
+
+      $car['avg_rating'] = $avgDataOther['avg_rating'] ?? 0;
+      $car['total_reviews'] = $avgDataOther['total_reviews'] ?? 0;
+  }
+  unset($car); 
+
+} catch (PDOException $e) {
+    die("Database error: " . $e->getMessage());
+}
+?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -38,7 +118,15 @@
           <span>community</span>
           </div>
 
-          <div><i class="fa-solid fa-tag"></i><span>best deals</span></div>
+          
+          <?php if ($isAdmin): ?>
+<div id="AddCarBtn" style="cursor: pointer;">
+  <i class="fa-solid fa-car-side"></i>
+  <span>Add Cars</span>
+</div>
+<?php endif; ?>
+
+
         
 <div id="logoutBtn" style="cursor: pointer;">
   <i class="fa-solid fa-unlock"></i>
@@ -55,6 +143,20 @@
 
 <?php 
 require_once("../repositories/db_connect.php"); 
+
+// Is the logged in user an admin
+$currentUserId = $_SESSION['user']['id'] ?? null;
+$isAdmin = false;
+
+if ($currentUserId) {
+    $stmtAdmin = $pdo->prepare("CALL IsUserAdmin(:uid)");
+    $stmtAdmin->bindParam(':uid', $currentUserId, PDO::PARAM_INT);
+    $stmtAdmin->execute();
+    $result = $stmtAdmin->fetch(PDO::FETCH_ASSOC);
+    $stmtAdmin->closeCursor();
+
+    $isAdmin = $result && $result['is_admin'] == 1;
+}
 
 //Get Average Review for Thumbnail Car
 $stmtAvg = $pdo->prepare("CALL GetCarAverageReview(:car_id)");
@@ -309,6 +411,12 @@ document.getElementById("SearchBtn").addEventListener("click", function () {
 document.getElementById("CommunityBtn").addEventListener("click", function () {
   window.location.href = "../pages/community.php";
 });
+
+<?php if ($isAdmin): ?>
+document.getElementById("AddCarBtn").addEventListener("click", function () {
+  window.location.href = "../pages/push_car.php";
+});
+<?php endif; ?>
 
 
 </script>
