@@ -3,6 +3,19 @@ include("../controllers/page_controller.php");
 require_once("../repositories/db_connect.php");
 $u_id = $_SESSION['user']['id'];
 
+
+$isAdmin = false;
+if ($u_id) {
+    $stmtAdmin = $pdo->prepare("CALL IsUserAdmin(:uid)");
+    $stmtAdmin->bindParam(':uid', $u_id, PDO::PARAM_INT);
+    $stmtAdmin->execute();
+    $result = $stmtAdmin->fetch(PDO::FETCH_ASSOC);
+    $stmtAdmin->closeCursor();
+
+    $isAdmin = $result && $result['is_admin'] == 1;
+}
+
+
 // Handle new post
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add') {
     if (!empty($_POST['topic']) && !empty($_POST['content'])) {
@@ -17,8 +30,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Handle delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
     $post_id = (int)$_POST['post_id'];
-    $stmt = $pdo->prepare("DELETE FROM posts WHERE post_id = :post_id AND u_id = :u_id");
-    $stmt->execute(['post_id' => $post_id, 'u_id' => $u_id]);
+    
+    if ($isAdmin) {
+        // Admin can delete any post
+        $stmt = $pdo->prepare("DELETE FROM posts WHERE post_id = :post_id");
+        $stmt->execute(['post_id' => $post_id]);
+    } else {
+        // User can only delete their own post
+        $stmt = $pdo->prepare("DELETE FROM posts WHERE post_id = :post_id AND u_id = :u_id");
+        $stmt->execute(['post_id' => $post_id, 'u_id' => $u_id]);
+    }
+
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -139,31 +161,33 @@ $stmt->closeCursor();
                     </button>
                 </form>
 
-                <!-- Edit/Delete for owner -->
-                <?php if ($post['u_id'] == $u_id): ?>
-                    <form method="POST" class="delete-form" onsubmit="return confirm('Delete this post?');">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
-                        <button type="submit" class="delete">Delete</button>
-                    </form>
+                <!-- Edit/Delete -->
+<?php if ($post['u_id'] == $u_id || $isAdmin): ?>
+    <form method="POST" class="delete-form" onsubmit="return confirm('Delete this post?');">
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
+        <button type="submit" class="delete">Delete</button>
+    </form>
+<?php endif; ?>
 
-                    <button type="button" class="edit" onclick="toggleEdit(<?= $post['post_id'] ?>)">Edit</button>
+<?php if ($post['u_id'] == $u_id): ?>
+    <button type="button" class="edit" onclick="toggleEdit(<?= $post['post_id'] ?>)">Edit</button>
+    <!-- Inline edit form -->
+    <form method="POST" class="edit-form" id="edit-form-<?= $post['post_id'] ?>" style="display:none;" onsubmit="return confirm('Save changes to this post?');">
+        <input type="hidden" name="action" value="edit">
+        <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
 
-                    <!-- Inline edit form -->
-                    <form method="POST" class="edit-form" id="edit-form-<?= $post['post_id'] ?>" style="display:none;" onsubmit="return confirm('Save changes to this post?');">
-                        <input type="hidden" name="action" value="edit">
-                        <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
+        <label>Topic:</label>
+        <textarea name="topic" required style="width:100%; margin-bottom:5px;"><?= htmlspecialchars($post['topic']) ?></textarea>
 
-                        <label>Topic:</label>
-                        <textarea name="topic" required style="width:100%; margin-bottom:5px;"><?= htmlspecialchars($post['topic']) ?></textarea>
+        <label>Content:</label>
+        <textarea name="content" required style="width:100%; height:70px; margin-bottom:5px;"><?= htmlspecialchars($post['content']) ?></textarea>
 
-                        <label>Content:</label>
-                        <textarea name="content" required style="width:100%; height:70px; margin-bottom:5px;"><?= htmlspecialchars($post['content']) ?></textarea>
+        <button type="submit" class="edit">Save</button>
+        <button type="button" onclick="toggleEdit(<?= $post['post_id'] ?>)">Cancel</button>
+    </form>
+<?php endif; ?>
 
-                        <button type="submit" class="edit">Save</button>
-                        <button type="button" onclick="toggleEdit(<?= $post['post_id'] ?>)">Cancel</button>
-                    </form>
-                <?php endif; ?>
             </div>
         </div>
 

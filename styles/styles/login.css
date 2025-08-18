@@ -1,14 +1,31 @@
+/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* Base */
 body {
   font-family: 'Segoe UI', sans-serif;
-  background-color: #ffffff;
+  background: url('../media/607773-1920x1080-desktop-full-hd-sports-car-wallpaper.jpg') no-repeat center center;
+  background-size: cover;
 }
 
+/* Blur overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  filter: blur(4px);
+  z-index: -1;
+}
+
+/* Header */
 header {
   background-color: #002b5c; 
   color: white;
@@ -20,6 +37,7 @@ header {
   justify-content: space-between;
   align-items: center;
 }
+
 .brand-container {
   display: flex;
   align-items: center;
@@ -27,22 +45,19 @@ header {
 
 .brand-container img {
   height: 50px;
-  
-  padding-left:40px;
-  border-radius:90px;
+  padding-left: 40px;
+  border-radius: 90px;
 }
 
- .logo-text {
-      font-family: 'Rubik', sans-serif;
-      font-size: 48px;
-      font-weight: 900;
-      text-transform: lowercase;
-      color: white;
-      letter-spacing: -1px;
-      padding: 10px;
-      display: inline-block;
-    }
-
+.logo-text {
+  font-family: 'Rubik', sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+  text-transform: lowercase;
+  color: white;
+  letter-spacing: -1px;
+  padding: 10px;
+}
 
 .nav-icons {
   display: flex;
@@ -65,112 +80,28 @@ header {
   font-size: 24px;
   margin-bottom: 6px;
 }
-.nav-icons div :hover {
+
+.nav-icons div:hover {
   color: rgb(225, 153, 59);
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #ffffff;
-}
-
-.login-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 80px); 
-}
-
-.login-form {
-  background: #fff;
-  padding: 30px 40px;
-  border-radius: 10px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
-  width: 320px;
-}
-
-.login-form h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.login-form label {
-  display: block;
-  margin: 10px 0 5px;
-  font-weight: 500;
-}
-
-.login-form input[type="email"],
-.login-form input[type="password"] {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 15px;
-}
-
-
-.checkbox-remember {
-  margin: 15px 0;
-  display: flex;
-  align-items: center;
-}
-
-.checkbox-remember input {
-  margin-right: 10px;
-}
-
-.login-form button {
-  width: 100%;
-  padding: 12px;
-  background-color: #29f3fd;
-  color: #000;
-  border: none;
-  font-weight: bold;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.forgot {
-  margin-top: 15px;
-  text-align: center;
-}
-
-.forgot a {
-  color: #000;
-  font-weight: 600;
-  text-decoration: underline;
-}
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #ffffff;
-}
-
+/* Main Layout */
 main {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 80px); 
+  min-height: calc(100vh - 80px);
 }
 
 .login-container {
+  position: relative;
+  z-index: 1;
   text-align: center;
 }
 
+/* Login Form */
 .login-form {
-  background-color: #fff;
+  background: #fff;
   padding: 30px;
   border-radius: 10px;
   width: 330px;
@@ -183,6 +114,7 @@ main {
   text-align: center;
   font-size: 22px;
   margin-bottom: 20px;
+  font-weight: bold;
 }
 
 .login-form label {
@@ -200,7 +132,29 @@ main {
   font-size: 14px;
 }
 
+/* Password Field */
+.password-wrapper {
+  position: relative;
+  margin-bottom: 10px; 
+}
 
+.password-wrapper input {
+  padding: 10px 35px 10px 10px;
+}
+
+.eye-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #555;
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+}
+
+/* Remember me */
 .checkbox-remember {
   margin: 15px 0;
   display: flex;
@@ -211,17 +165,37 @@ main {
   margin-right: 8px;
 }
 
+/* Button */
 .login-form button {
   width: 100%;
-  padding: 10px;
-  /* background-color: #29f3fd; */
-   background-color: #4187e9;
-  color: #000;
+  padding: 12px;
+  background-color: #4187e9;
+  color: #fff;
   font-weight: bold;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.login-form button:hover {
+  background-color: #2f6ad9;
+}
+
+/* Links */
+.extra-links {
+  text-align: center;
+  margin-top: 10px; 
+  font-size: 15px;
+  font-weight: 600;
+  color: black;
+}
+
+.extra-links a {
+  text-decoration: underline;
+  color: #4187e9;
 }
 
 .forgot {
@@ -235,26 +209,7 @@ main {
   text-decoration: underline;
 }
 
-.extra-links {
-  text-align: center;
-  margin-top: 5px; 
-  font-size: 15px;
-  font-family: 'Segoe UI', sans-serif;
-  font-weight: 600;
-  color: black;
-  position: relative;
-  top: -70px; 
-}
-
-.extra-links p {
-  margin: 4px 0;
-}
-
-.extra-links a {
-  text-decoration: underline;
-  color: black;
-}
-
+/* Footer */
 .custom-footer {
   background-color: #111111;
   color: white;
@@ -280,7 +235,7 @@ main {
 .footer-column a {
   display: block;
   color: white;
- text-decoration: underline; 
+  text-decoration: underline; 
   margin: 10px 0;
 }
 
@@ -290,13 +245,12 @@ main {
 
 .social-icons {
   font-size: 22px;
-  margin-right: 5px;
   display: flex;
   margin-top: 30px;
-  gap:20px;
+  gap: 20px;
 }
 
-.trustpilot p  {
+.trustpilot p {
   margin: 10px 4px;
   color: white;
 }
@@ -325,7 +279,7 @@ main {
   font-size: 16px;
 }
 
-
+/* Form Container (generic) */
 .form-container {
   max-width: 480px;
   margin: 50px auto;
@@ -335,7 +289,6 @@ main {
   box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
 }
-
 
 .form label {
   font-weight: 600;
@@ -353,15 +306,12 @@ main {
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 16px;
-  box-sizing: border-box;
   transition: border 0.3s;
 }
 
 .form textarea {
   resize: vertical;
 }
-
-
 
 .form button {
   width: 100%;
@@ -380,48 +330,10 @@ main {
   background: #255edb;
 }
 
-
-.extra-links {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 15px;
-  color: #222;
-}
-
-.extra-links a {
-  text-decoration: underline;
-  color: black;
-}
-
+/* Responsive */
 @media (max-width: 480px) {
   .form-container {
     margin: 30px 20px;
     padding: 20px;
   }
-}
-
-.password-wrapper {
-  position: relative;
-  margin-bottom: 10px; 
-}
-
-.password-wrapper input {
-  width: 100%;
-  padding: 10px 35px 10px 10px; 
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
-  box-sizing: border-box; 
-}
-
-.eye-icon {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #555;
-  font-size: 18px;
-  width: 20px;
-  text-align: center;
 }

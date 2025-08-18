@@ -3,11 +3,24 @@ include("../controllers/page_controller.php");
 
 require_once("../repositories/db_connect.php");
 
+$user_id = $_SESSION['user']['id'];
+
+
 if (!isset($_GET['c_id']) || !is_numeric($_GET['c_id'])) {
     die("Invalid Car ID");
 }
 
 $carId = (int) $_GET['c_id'];
+
+
+// Check if the user already reviewed this car
+$ownStmt = $pdo->prepare("SELECT * FROM reviews WHERE u_id = :u_id AND c_id = :c_id LIMIT 1");
+$ownStmt->execute([
+    ':u_id' => $user_id,
+    ':c_id' => $carId
+]);
+$ownReview = $ownStmt->fetch(PDO::FETCH_ASSOC);
+
 
 // Get average review for the car
 $stmtAvgUser = $pdo->prepare("CALL GetCarAverageReview(:car_id)");
@@ -20,15 +33,23 @@ $avgRatingUser = $avgDataUser['avg_rating'] ?? 0;
 $totalReviewsUser = $avgDataUser['total_reviews'] ?? 0;
 
 //GiveReview
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userId = $_SESSION['user']['id'];
-    $carId = isset($_POST['c_id']) ? (int) $_POST['c_id'] : (int) $_GET['c_id'];
+if (isset($_POST['action']) && $_POST['action'] === 'give') {
+    $stars = (int) $_POST['stars'];
+    $topic = trim($_POST['topic']);
+    $description = trim($_POST['description']);
 
-    if (isset($_POST['action']) && $_POST['action'] === 'give') {
-        $stars = (int) $_POST['stars'];
-        $topic = trim($_POST['topic']);
-        $description = trim($_POST['description']);
+    $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM reviews WHERE u_id = :u_id AND c_id = :c_id");
+    $checkStmt->execute([
+        ':u_id' => $userId,
+        ':c_id' => $carId
+    ]);
+    $alreadyReviewed = $checkStmt->fetchColumn();
 
+    if ($alreadyReviewed > 0) {
+        
+        echo "<script>alert('You have already reviewed this car. Please edit your review instead.');</script>";
+    } else {
+        
         $stmt = $pdo->prepare("CALL GiveReview(:u_id, :c_id, :stars, :topic, :description)");
         $stmt->execute([
             ':u_id' => $userId,
@@ -38,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':description' => $description
         ]);
     }
+
 //EditReview
     if (isset($_POST['action']) && $_POST['action'] === 'edit') {
         $reviewId = (int) $_POST['review_id'];
@@ -95,6 +117,8 @@ try {
 } catch (PDOException $e) {
     die("Database error (reviews): " . $e->getMessage());
 }
+
+
 
 ?>
 <!DOCTYPE html>
@@ -187,6 +211,7 @@ try {
 <section class="review-section">
     
 <div class="review-form">
+<?php if (!$ownReview): ?>
     <h2>Write a Review</h2>
     <form method="POST" class="give-review-form">
         <input type="hidden" name="action" value="give">
@@ -202,15 +227,16 @@ try {
         </select>
 
         <label for="topic">Topic:</label>
-        <input type="text" id="topic" name="topic" placeholder="Short summary (e.g. 'Smooth ride')" required>
+        <input type="text" id="topic" name="topic" placeholder="Short summary" required>
 
         <label for="description">Description:</label>
-        <textarea id="description" name="description" placeholder="Tell others about your experience..." required></textarea>
+        <textarea id="description" name="description" placeholder="Your detailed review..." required></textarea>
 
         <div class="form-actions" style="justify-content:flex-end;">
             <button type="submit" class="btn-save">Save</button>
         </div>
     </form>
+<?php endif; ?>
 </div>
 
 
