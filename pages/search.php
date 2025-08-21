@@ -90,15 +90,7 @@ if (isset($conn) && $conn instanceof mysqli) {
             <div class="logo-text">carverly</div>
         </div>
         <div class="nav-icons">
-            <div id="ProfileBtn" style="cursor: pointer;">
-                <i class="fa-solid fa-user"></i><span>Profile</span>
-            </div>
-            <div><i class="fa-solid fa-tag"></i><span>best deals</span></div>
-            <div class="active"><i class="fa-solid fa-magnifying-glass"></i><span>search cars</span></div>
-            <div><i class="fa-solid fa-users"></i><span>community</span></div>
-            <div id="logoutBtn" style="cursor: pointer;">
-                <i class="fa-solid fa-unlock"></i><span>Logout</span>
-            </div>
+          
         </div>
     </div>
 </header>

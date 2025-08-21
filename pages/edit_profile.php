@@ -1,172 +1,175 @@
+<?php
+session_start();
+require_once("../repositories/db_connect.php");
+
+// Redirect if not logged in
+if (!isset($_SESSION['user']['id'])) {
+    header("Location: ../pages/login.html");
+    exit;
+}
+
+$u_id = $_SESSION['user']['id'];
+$message = "";
+
+// --- Handle form submission ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name  = $_POST['u_name'] ?? '';
+    $email = $_POST['u_email'] ?? '';
+    $about = $_POST['u_about'] ?? '';
+
+    // Profile picture (URL or file upload)
+    $profile_pic = $_POST['u_profile_pic'] ?? '';
+
+    if (!empty($_FILES['profile_pic_upload']['name'])) {
+        $target_dir = "../uploads/";
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir, 0777, true);
+        }
+        $file_name = time() . "_" . basename($_FILES["profile_pic_upload"]["name"]);
+        $target_file = $target_dir . $file_name;
+        if (move_uploaded_file($_FILES["profile_pic_upload"]["tmp_name"], $target_file)) {
+            $profile_pic = $target_file;
+        }
+    }
+
+    try {
+        $stmt = $pdo->prepare("CALL update_user_profile(:u_id, :u_name, :u_email, :u_about, :u_profile_pic)");
+        $stmt->bindParam(':u_id', $u_id, PDO::PARAM_INT);
+        $stmt->bindParam(':u_name', $name, PDO::PARAM_STR);
+        $stmt->bindParam(':u_email', $email, PDO::PARAM_STR);
+        $stmt->bindParam(':u_about', $about, PDO::PARAM_STR);
+        $stmt->bindParam(':u_profile_pic', $profile_pic, PDO::PARAM_STR);
+        $stmt->execute();
+        $stmt->closeCursor();
+
+        $message = "✅ Profile updated successfully!";
+    } catch (Exception $e) {
+        $message = "❌ Error: " . $e->getMessage();
+    }
+}
+
+// --- Fetch user profile for display ---
+$stmt = $pdo->prepare("CALL get_user_profile_by_session(:u_id)");
+$stmt->bindParam(':u_id', $u_id, PDO::PARAM_INT);
+$stmt->execute();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->closeCursor();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Profile Information</title>
+  <title>Edit Profile</title>
   <link rel="stylesheet" href="../styles/styles/profile.css" />
-  <!-- Font Awesome CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <!-- Add this inside <head> -->
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@900&display=swap" rel="stylesheet"/>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 <body>
+  <!-- Header -->
   <header>
     <div class="navbar">
-   <div class="brand-container">
-  <img src=https://i.postimg.cc/63bx44WN/car-logo.jpg alt="Logo" />
-  <div class="logo-text">carverly</div>
+        
+        <div id="back_button" class="nav-button">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back</span>
+        </div>
 
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <div class="profile-panel">
+      <!-- Profile Card -->
+      <div class="profile-card" id="profile-card">
+        <img src="<?= htmlspecialchars($user['u_profile_pic'] ?? 'https://via.placeholder.com/250') ?>" alt="Profile Picture">
+        <div class="mini-info">
+          <h3><?= htmlspecialchars($user['u_name'] ?? 'Unknown User') ?></h3>
+          <p><?= htmlspecialchars($user['u_email'] ?? '') ?></p>
+        </div>
+      </div>
+
+      <!-- Edit Form -->
+<div class="profile-details">
+  <div class="profile-section edit-box">
+    <h2>Edit Your Information</h2>
+    <?php if ($message): ?>
+      <p class="status-msg"><?= htmlspecialchars($message) ?></p>
+    <?php endif; ?>
+    
+    <form action="" method="post" enctype="multipart/form-data" class="edit-form">
+      <div class="form-group">
+        <label for="u_name">Name</label>
+        <input type="text" id="u_name" name="u_name" value="<?= htmlspecialchars($user['u_name'] ?? '') ?>" required>
+      </div>
+
+      <div class="form-group">
+        <label for="u_email">Email</label>
+        <input type="email" id="u_email" name="u_email" value="<?= htmlspecialchars($user['u_email'] ?? '') ?>" required>
+      </div>
+
+      <div class="form-group">
+        <label for="u_about">About</label>
+        <textarea id="u_about" name="u_about" rows="4"><?= htmlspecialchars($user['u_about'] ?? '') ?></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="u_profile_pic">Profile Picture (URL)</label>
+        <input type="text" id="u_profile_pic" name="u_profile_pic" value="<?= htmlspecialchars($user['u_profile_pic'] ?? '') ?>">
+      </div>
+
+      <div class="form-group">
+        <label for="profile_pic_upload">Or Upload New Picture</label>
+        <input type="file" id="profile_pic_upload" name="profile_pic_upload" accept="image/*">
+      </div>
+
+      <button type="submit" class="update-btn">
+        <i class="fa-solid fa-check"></i> Save Changes
+      </button>
+    </form>
+  </div>
 </div>
 
-     <div class="nav-icons">
-        <div><i class="fa-solid fa-user"></i><span>Profile</span></div>
-        <div><i class="fa-solid fa-tag"></i><span>best deals</span></div>
-        <div><i class="fa-solid fa-magnifying-glass"></i><span>search cars</span></div>
-        <div><i class="fa-solid fa-users"></i><span>community</span></div>
-        <div><i class="fa-solid fa-unlock"></i><span>Logout</span></div>
-      </div>
-      </div>
-   </header>    
-<main>
-    <button class="back-button" onclick="history.back()">Back</button>
-<div class="login-container">
-      <h2>PROFILE INFORMATION</h2>
-      <form class="login-form">
-        <label for="email">User Name</label>
-        <input type="email" id="email" placeholder="Enter User Name " required>
+    </div>
+  </main>
 
-        <label for="password">Email</label>
-        <div class="password-wrapper">
-          <input type="password" id="password" placeholder="Enter Email" required>
+  <!-- Footer -->
+  <footer class="custom-footer">
+    <div class="footer-content">
+      <div class="footer-column">
+        <h3>Help Centre</h3>
+        <p>Mon–Fri: 9.00 - 18.00</p>
+        <p>Sat: 9.00 - 17.30</p>
+        <p>Sun & Holidays: CLOSED</p>
+        <div class="social-icons">
+          <i class="fab fa-facebook-f"></i>
+          <i class="fab fa-x-twitter"></i>
+          <i class="fab fa-instagram"></i>
+          <i class="fab fa-youtube"></i>
         </div>
-        <label for="password">Contact</label>
-        <div class="password-wrapper">
-          <input type="password" id="password" placeholder="Enter Contact" required>
-        </div>
-        <label for="intent">Are you the owner or planning to buy? <span class="required"></span></label>
-      <select id="intent" name="intent" required>
-        <option value="">Select an option...</option>
-        <option>Car Owner</option>
-        <option>Interested Buyer</option>
-      </select>
-
-        <label for="password">Car Model</label>
-       <select id="intent" name="intent" required>
-        <option value="">Select the car model...</option>
-        <option>Audi Q4 e-tron</option>
-        <option>Hyundai Santa Fe</option>
-        <option>Ford Kuga</option>
-        <option>Kia Sportage</option>
-        <option> MG 4 </option>
-         <option>new Audi Q7</option>
-          <option>Kia EV3</option>
-           <option>Tesla Model 3</option>
-            <option>BMW 3 Series</option>
-             <option>Porsche Taycan GT3 </option>
-              <option>BMW M5 F90 </option>
-               <option>Jaecoo 7</option>
-                <option>Lamborghini Huracan</option>
-                 <option>Volkswagen</option>
-                  <option>The spacious Kia Sportage</option>
-                   <option>New BYD Atto 3</option>
-                    <option>Audi A1 Sportback</option>
-                     <option>Omoda 5</option>
-                      <option>Mercedes-Benz</option>
-                       <option>Volkswagen</option>
-      </select>
-
-        <label for="password">Ownership Type</label>
-        <select id="intent" name="intent" required>
-        <option value="">Select the Type...</option>
-        <option> First-hand</option>
-        <option> second-hand</option>
-        </select>
-
-         <label for="password">Registered City</label>
-        <select id="intent" name="intent" required>
-        <option value="">Select the City ...</option>
-        <option>Dhaka</option>
-        <option>Rajshahi</option>
-        <option>khulna</option>
-        <option>Shylet</option>
-        </select>
-      <br> 
-        <button type="third-btn">Submit</button>
-       </form>
-</div> 
-</main>
-<footer class="custom-footer">
-  <div class="footer-content">
-    <div class="footer-column">
-      <h3>Help Centre</h3>
-      <p>Monday to Friday 9.00 - 18.00</p>
-      <p>Saturday 9.00 - 17.30</p>
-      <p>Sundays and Bank Holidays CLOSED</p>
-       <div class="social-icons">
-        <i class="fab fa-facebook-f"></i>
-        <i class="fab fa-x-twitter"></i>
-        <i class="fab fa-instagram"></i>
-        <i class="fab fa-youtube"></i>
-        <i class="fab fa-tiktok"></i>
       </div>
-
+      <div class="footer-column">
+        <a href="#">About us</a>
+        <a href="#">Contact us</a>
+        <a href="#">Newsroom</a>
+      </div>
+      <div class="footer-column trustpilot">
+        <p>Rated <strong>4.4</strong>/5 from <strong>3,590</strong> reviews</p>
+        <p style="font-size: 22px; color: #00B67A; font-weight: bold;">★ Trustcarverly</p>
+      </div>
     </div>
-
-    <div class="footer-column">
-      <a href="#">About us</a>
-      <a href="#">Contact us</a>
-      <a href="#">Authors and experts</a>
-      <a href="#">Carverly newsroom</a>
+    <div class="footer-bottom">
+      <p>© 2025 Carverly Ltd. All rights reserved</p>
     </div>
-
-    <div class="footer-column">
-      <a href="#">Careers</a>
-      <a href="#">Dealer & brand partners</a>
-    </div>
-
-    <div class="footer-column trustpilot">
-      <p>Rated <strong>4.4</strong>/5 from <strong>3,590</strong> reviews</p>
-      <p style="font-size: 22px; color: #00B67A; font-weight: bold;">★ Trustcarverly</p>
-      <p>⭐⭐⭐⭐⭐</p>
-    </div>
-  </div>
-
-  <hr>
-
-  <div class="footer-bottom">
-    <p>© 2025 Carverly Ltd. All rights reserved</p>
-    <div class="footer-links">
-      <a href="#">Terms & conditions</a>
-      <a href="#">Manage cookies & privacy</a>
-      <a href="#">Fraud disclaimer</a>
-      <a href="#">ESG Policy</a>
-      <a href="#">Privacy policy</a>
-      <a href="#">Modern slavery statement</a>
-      <a href="#">Accessibility notice</a>
-      <a href="#">Sitemap</a>S
-    </div>
-   <div class="footer-flags">
-  <span><i class="fa-solid fa-flag"></i> BD </span>
-  <span><i class="fa-solid fa-flag"></i> Germany </span>
-  <span><i class="fa-solid fa-flag"></i> Spain </span>
-</div>
+  </footer>
 
 
-  </div>
-</footer>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const card = document.getElementById("profileCard");
-  setTimeout(() => {
-    card.classList.add("show");
-  }, 200);
+  <script>
+document.getElementById("back_button").addEventListener("click", function () {
+  window.location.href = "../pages/userprofile.php"; 
 });
+
 </script>
 
 </body>
 </html>
-
-    
