@@ -1,8 +1,7 @@
 <?php 
 include("../controllers/page_controller.php");
 require_once("../repositories/db_connect.php");
-$u_id = $_SESSION['user']['id'];
-
+$u_id = $_SESSION['user']['id'] ?? null;
 
 $isAdmin = false;
 if ($u_id) {
@@ -15,9 +14,8 @@ if ($u_id) {
     $isAdmin = $result && $result['is_admin'] == 1;
 }
 
-
 // Handle new post
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add') {
     if (!empty($_POST['topic']) && !empty($_POST['content'])) {
         $stmt = $pdo->prepare("CALL AddPost(:u_id, :topic, :content)");
         $stmt->execute(['u_id' => $u_id, 'topic' => $_POST['topic'], 'content' => $_POST['content']]);
@@ -28,25 +26,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Handle delete
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     $post_id = (int)$_POST['post_id'];
-    
     if ($isAdmin) {
-        // Admin can delete any post
         $stmt = $pdo->prepare("DELETE FROM posts WHERE post_id = :post_id");
         $stmt->execute(['post_id' => $post_id]);
     } else {
-        // User can only delete their own post
         $stmt = $pdo->prepare("DELETE FROM posts WHERE post_id = :post_id AND u_id = :u_id");
         $stmt->execute(['post_id' => $post_id, 'u_id' => $u_id]);
     }
-
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 
 // Handle edit
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'edit') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'edit') {
     $post_id = (int)$_POST['post_id'];
     $stmt = $pdo->prepare("UPDATE posts SET topic = :topic, content = :content WHERE post_id = :post_id AND u_id = :u_id");
     $stmt->execute([
@@ -73,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reaction'])) {
 }
 
 // Handle new comment
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'comment') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'comment') {
     $post_id = (int)$_POST['post_id'];
     if (!empty($_POST['comment_text'])) {
         $stmt = $pdo->prepare("CALL AddComment(:post_id, :u_id, :comment_text)");
@@ -88,11 +82,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
-// Fetch posts with user reaction
+// Fetch posts
 $stmt = $pdo->prepare("CALL GetPostsFull(:u_id)");
 $stmt->execute(['u_id' => $u_id]);
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $stmt->closeCursor();
+
+// Collect all post_ids
+$postIds = array_column($posts, 'post_id');
+$commentsByPost = [];
+
+if ($postIds) {
+    // Fetch all comments in one query
+    $inQuery = implode(',', array_fill(0, count($postIds), '?'));
+    $cstmt = $pdo->prepare("
+        SELECT c.comment_text, u.u_name, c.created_at, c.post_id
+        FROM comments c
+        JOIN users u ON c.u_id = u.u_id
+        WHERE c.post_id IN ($inQuery)
+        ORDER BY c.created_at DESC
+    ");
+    $cstmt->execute($postIds);
+    $comments = $cstmt->fetchAll(PDO::FETCH_ASSOC);
+    $cstmt->closeCursor();
+
+    // Group comments by post_id
+    foreach ($comments as $comment) {
+        $commentsByPost[$comment['post_id']][] = $comment;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -135,7 +153,7 @@ $stmt->closeCursor();
 
     <?php foreach ($posts as $post): ?>
     <div class="post-container">
-        <!-- LEFT SIDE (7 parts) -->
+        <!-- LEFT SIDE -->
         <div class="post-left">
             <span class="topic"><?= htmlspecialchars($post['topic']) ?></span>
             <span class="username">Posted by: <?= htmlspecialchars($post['u_name']) ?></span>
@@ -162,36 +180,34 @@ $stmt->closeCursor();
                 </form>
 
                 <!-- Edit/Delete -->
-<?php if ($post['u_id'] == $u_id || $isAdmin): ?>
-    <form method="POST" class="delete-form" onsubmit="return confirm('Delete this post?');">
-        <input type="hidden" name="action" value="delete">
-        <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
-        <button type="submit" class="delete">Delete</button>
-    </form>
-<?php endif; ?>
+                <?php if ($post['u_id'] == $u_id || $isAdmin): ?>
+                    <form method="POST" class="delete-form" onsubmit="return confirm('Delete this post?');">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
+                        <button type="submit" class="delete">Delete</button>
+                    </form>
+                <?php endif; ?>
 
-<?php if ($post['u_id'] == $u_id): ?>
-    <button type="button" class="edit" onclick="toggleEdit(<?= $post['post_id'] ?>)">Edit</button>
-    <!-- Inline edit form -->
-    <form method="POST" class="edit-form" id="edit-form-<?= $post['post_id'] ?>" style="display:none;" onsubmit="return confirm('Save changes to this post?');">
-        <input type="hidden" name="action" value="edit">
-        <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
+                <?php if ($post['u_id'] == $u_id): ?>
+                    <button type="button" class="edit" onclick="toggleEdit(<?= $post['post_id'] ?>)">Edit</button>
+                    <form method="POST" class="edit-form" id="edit-form-<?= $post['post_id'] ?>" style="display:none;" onsubmit="return confirm('Save changes to this post?');">
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
 
-        <label>Topic:</label>
-        <textarea name="topic" required style="width:100%; margin-bottom:5px;"><?= htmlspecialchars($post['topic']) ?></textarea>
+                        <label>Topic:</label>
+                        <textarea name="topic" required style="width:100%; margin-bottom:5px;"><?= htmlspecialchars($post['topic']) ?></textarea>
 
-        <label>Content:</label>
-        <textarea name="content" required style="width:100%; height:70px; margin-bottom:5px;"><?= htmlspecialchars($post['content']) ?></textarea>
+                        <label>Content:</label>
+                        <textarea name="content" required style="width:100%; height:70px; margin-bottom:5px;"><?= htmlspecialchars($post['content']) ?></textarea>
 
-        <button type="submit" class="edit">Save</button>
-        <button type="button" onclick="toggleEdit(<?= $post['post_id'] ?>)">Cancel</button>
-    </form>
-<?php endif; ?>
-
+                        <button type="submit" class="edit">Save</button>
+                        <button type="button" onclick="toggleEdit(<?= $post['post_id'] ?>)">Cancel</button>
+                    </form>
+                <?php endif; ?>
             </div>
         </div>
 
-        <!-- RIGHT SIDE (3 parts) -->
+        <!-- RIGHT SIDE -->
         <div class="post-right">
             <!-- Comment form -->
             <form method="POST" class="comment-form">
@@ -202,33 +218,20 @@ $stmt->closeCursor();
             </form>
 
             <!-- Comments list -->
-            <?php
-            $cstmt = $pdo->prepare("SELECT c.comment_text, u.u_name, c.created_at
-                                    FROM comments c
-                                    JOIN users u ON c.u_id = u.u_id
-                                    WHERE c.post_id = :post_id
-                                    ORDER BY c.created_at DESC");
-            $cstmt->execute(['post_id' => $post['post_id']]);
-            $comments = $cstmt->fetchAll(PDO::FETCH_ASSOC);
-            $cstmt->closeCursor();
-            ?>
-
-            <?php if ($comments): ?>
+            <?php if (!empty($commentsByPost[$post['post_id']])): ?>
                 <div class="comment-list">
-                    <?php foreach ($comments as $comment): ?>
+                    <?php foreach ($commentsByPost[$post['post_id']] as $comment): ?>
                         <div class="comment">
                             <strong><?= htmlspecialchars($comment['u_name']) ?>:</strong>
                             <?= htmlspecialchars($comment['comment_text']) ?>
-                            <span class="comment-time">
-                                (<?= date("M j, h:i A", strtotime($comment['created_at'])) ?>)
-                            </span>
+                            <span class="comment-time">(<?= date("M j, h:i A", strtotime($comment['created_at'])) ?>)</span>
                         </div>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         </div>
     </div>
-<?php endforeach; ?>
+    <?php endforeach; ?>
 
 </main>
 
