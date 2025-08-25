@@ -1,5 +1,6 @@
 <?php
 require_once("../repositories/db_connect.php"); 
+include("../controllers/page_controller.php");
 
 $message = "";
 
@@ -52,6 +53,42 @@ if (isset($_POST['add_car_with_images'])) {
     <link rel="stylesheet" href="../styles/styles/push_car.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@900&display=swap" rel="stylesheet"/>
+    <style>
+        input.invalid, textarea.invalid {
+            border: 2px solid red;
+            background-color: #ffecec;
+        }
+        small.error {
+            color: red;
+            font-size: 0.85em;
+        }
+        .preview-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .preview {
+            max-width: 200px;
+            max-height: 120px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .preview-error {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-align: center;
+            line-height: 120px;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
   <header>
@@ -69,28 +106,63 @@ if (isset($_POST['add_car_with_images'])) {
         <p class="message"><?= htmlspecialchars($message) ?></p>
     <?php endif; ?>
 
-    <form method="POST" class="form-section">
+    <form method="POST" class="form-section" id="carForm" novalidate>
         <h2>Car Details</h2>
-        <input type="text" name="c_name" placeholder="Car Name" required>
-        <input type="text" name="c_type" placeholder="Car Type" required>
-        <input type="text" name="c_model" placeholder="Car Model" required>
-        <input type="text" name="c_brand" placeholder="Car Brand" required>
-        <textarea name="c_engine" placeholder="Engine Details" required></textarea>
-        <input type="date" name="c_release_date" required>
-        <input type="text" name="c_country" placeholder="Country" required>
-        <textarea name="c_features" placeholder="Features" required></textarea>
-        <textarea name="c_interesting_facts" placeholder="Interesting Facts"></textarea>
-        <textarea name="c_description" placeholder="Description"></textarea>
+        <div class="field">
+            <input type="text" name="c_name" placeholder="Car Name" required minlength="2" maxlength="50">
+            <small class="error"></small>
+        </div>
+        <div class="field">
+            <input type="text" name="c_type" placeholder="Car Type" required minlength="2" maxlength="50">
+            <small class="error"></small>
+        </div>
+        <div class="field">
+            <input type="text" name="c_model" placeholder="Car Model" required>
+            <small class="error"></small>
+        </div>
+        <div class="field">
+            <input type="text" name="c_brand" placeholder="Car Brand" required>
+            <small class="error"></small>
+        </div>
+        <div class="field">
+            <textarea name="c_engine" placeholder="Engine Details" required></textarea>
+            <small class="error"></small>
+        </div>
+        <div class="field">
+            <input type="date" name="c_release_date" required>
+            <small class="error"></small>
+        </div>
+        <div class="field">
+            <input type="text" name="c_country" placeholder="Country" required>
+            <small class="error"></small>
+        </div>
+        <div class="field">
+            <textarea name="c_features" placeholder="Features" required></textarea>
+            <small class="error"></small>
+        </div>
+        <div class="field">
+            <textarea name="c_interesting_facts" placeholder="Interesting Facts"></textarea>
+            <small class="error"></small>
+        </div>
+        <div class="field">
+            <textarea name="c_description" placeholder="Description"></textarea>
+            <small class="error"></small>
+        </div>
 
         <h2>Image URLs</h2>
         <div id="image-fields">
             <div class="image-field">
                 <input type="url" name="img_url[]" placeholder="Image URL" oninput="updatePreview(this)">
-                <img class="preview" style="display:none;">
+                <div class="preview-wrapper">
+                    <img class="preview" style="display:none;">
+                    <div class="preview-error">❌ Image failed to load</div>
+                </div>
+                <small class="error"></small>
             </div>
         </div>
         <button type="button" id="addImageBtn" onclick="addImageField()">+ Add Another Image</button>
 
+        <p id="form-error-message" style="color:red;display:none;"></p>
         <button type="submit" name="add_car_with_images">Add Car & Images</button>
     </form>
   </main>
@@ -136,7 +208,11 @@ if (isset($_POST['add_car_with_images'])) {
         div.className = 'image-field';
         div.innerHTML = `
             <input type="url" name="img_url[]" placeholder="Image URL" oninput="updatePreview(this)">
-            <img class="preview" style="display:none;">
+            <div class="preview-wrapper">
+                <img class="preview" style="display:none;">
+                <div class="preview-error">❌ Image failed to load</div>
+            </div>
+            <small class="error"></small>
         `;
         document.getElementById('image-fields').appendChild(div);
         imageCount++;
@@ -147,15 +223,104 @@ if (isset($_POST['add_car_with_images'])) {
     }
 
     function updatePreview(input) {
-        const img = input.nextElementSibling;
-        if (input.value.trim() !== '') {
+        const wrapper = input.parentElement.querySelector(".preview-wrapper");
+        const img = wrapper.querySelector(".preview");
+        const errorOverlay = wrapper.querySelector(".preview-error");
+
+        if (input.value.trim() !== "") {
             img.src = input.value;
-            img.style.display = 'block';
+            img.style.display = "block";
+            errorOverlay.style.display = "none";
+
+            img.onload = () => {
+                errorOverlay.style.display = "none";
+            };
+            img.onerror = () => {
+                errorOverlay.style.display = "block";
+            };
         } else {
-            img.style.display = 'none';
-            img.src = '';
+            img.style.display = "none";
+            errorOverlay.style.display = "none";
+            img.src = "";
         }
     }
+
+    // Validation helpers
+    function showError(input, message) {
+        const errorEl = input.parentElement.querySelector(".error");
+        if (message) {
+            errorEl.textContent = message;
+            input.classList.add("invalid");
+        } else {
+            errorEl.textContent = "";
+            input.classList.remove("invalid");
+        }
+    }
+
+    function validateField(input) {
+        const value = input.value.trim();
+        let message = "";
+
+        switch (input.name) {
+            case "c_name":
+            case "c_type":
+                if (value.length < 2 || value.length > 50) {
+                    message = `${input.placeholder} must be 2–50 characters.`;
+                }
+                break;
+            case "c_model":
+            case "c_brand":
+            case "c_country":
+                if (!value) message = `${input.placeholder} is required.`;
+                break;
+            case "c_engine":
+            case "c_features":
+                if (!value) message = `${input.placeholder} is required.`;
+                break;
+            case "c_release_date":
+                if (!value) {
+                    message = "Release date is required.";
+                } else {
+                    const releaseDate = new Date(value);
+                    const today = new Date();
+                    if (releaseDate > today) {
+                        message = "Release date cannot be in the future.";
+                    }
+                }
+                break;
+            case "img_url[]":
+                if (value) {
+                    try {
+                        new URL(value);
+                    } catch {
+                        message = "Invalid image URL.";
+                    }
+                }
+                break;
+        }
+        showError(input, message);
+        return message === "";
+    }
+
+    // Real-time validation
+    document.querySelectorAll("#carForm input, #carForm textarea").forEach(input => {
+        input.addEventListener("input", () => validateField(input));
+        input.addEventListener("blur", () => validateField(input));
+    });
+
+    // Final check before submit
+    document.getElementById("carForm").addEventListener("submit", function(e) {
+        let valid = true;
+        this.querySelectorAll("input, textarea").forEach(input => {
+            if (!validateField(input)) valid = false;
+        });
+        if (!valid) {
+            e.preventDefault();
+            const errorDiv = document.getElementById("form-error-message");
+            errorDiv.textContent = "Please fix the highlighted errors before submitting.";
+            errorDiv.style.display = "block";
+        }
+    });
 
     // Back button functionality
     document.getElementById("back_button").addEventListener("click", () => {
